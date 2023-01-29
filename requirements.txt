@@ -2,3 +2,5 @@ tensorflow
 pandas 
 numpy
 plantcv
+matplotlib
+cv2
