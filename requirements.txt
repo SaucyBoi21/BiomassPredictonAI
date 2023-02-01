@@ -1,6 +1,6 @@
-tensorflow
+tensorflow-gpu
 pandas 
 numpy
 plantcv
 matplotlib
-cv2
+
