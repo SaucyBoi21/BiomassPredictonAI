@@ -1,4 +1,6 @@
-tensorflow
-pandas 
-numpy
-plantcv
+tensorflow == 2.11.0
+pandas == 1.5.3
+numpy == 1.22.4
+plantcv == 3.14.2
+matplotlib == 3.5.3
+
