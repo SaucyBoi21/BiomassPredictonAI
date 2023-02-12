@@ -1,2 +1,5 @@
 /venv
 results_seedling.csv
+/rgb_images
+/image_calibration
+/depth_images
