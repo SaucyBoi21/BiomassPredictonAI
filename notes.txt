@@ -1,0 +1,7 @@
+Metrics to optimize:
+number of layers(1,2,3)
+number of nodes(8,16,24,32)
+type of activation function
+number of epochs
+type of loss function
+optimizer
