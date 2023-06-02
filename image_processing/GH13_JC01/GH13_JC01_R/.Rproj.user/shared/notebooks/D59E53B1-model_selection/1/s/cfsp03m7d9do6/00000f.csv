@@ -1,0 +1,1 @@
+"0","LA_rf <- randomForest(LA_mm2~., data = train_set_LA, ntree = 500)"

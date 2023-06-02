@@ -1,0 +1,6 @@
+"0","norm_bbmisc <- normalize(BIC_features, method = 'range', range = c(0,1))"
+"0",""
+"0","stand_bbmisc <- normalize(BIC_features, method = 'standardize')"
+"0",""
+"0","new_dataset<- stand_bbmisc %>%"
+"0","  mutate(LA_mm2 = img_LA$LA_mm2)"

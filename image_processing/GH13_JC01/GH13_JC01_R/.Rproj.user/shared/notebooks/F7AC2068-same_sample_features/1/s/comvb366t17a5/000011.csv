@@ -1,0 +1,8 @@
+"0","high_cor <- sort(findCorrelation(matrix_features, cutoff = 0.99))"
+"0","print(high_cor)"
+"1","[1]"
+"1","  2"
+"1"," 10"
+"1","
+"
+"0","img_predictors_cor <- img_predictors[, -high_cor]"

@@ -1,0 +1,5 @@
+"0","# Use a multiple linear regression model to predict LFW, this time splitting the dataset. "
+"0","set.seed(123)"
+"0","train_id<- sample(1:nrow(img_LFW),0.7*nrow(img_LFW))"
+"0","train_set<- img_LFW[train_id,]"
+"0","test_set<- img_LFW[-train_id,]"

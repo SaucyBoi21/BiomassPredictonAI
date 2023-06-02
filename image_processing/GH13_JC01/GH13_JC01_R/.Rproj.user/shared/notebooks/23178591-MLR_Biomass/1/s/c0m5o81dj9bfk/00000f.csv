@@ -1,0 +1,4 @@
+"0","set.seed(123)"
+"0","train_id_std<- sample(1:nrow(LFW_std),0.7*nrow(LFW_std))"
+"0","train_set_std<- LFW_std[train_id_std,]"
+"0","test_set_std<- LFW_std[-train_id_std,]"

@@ -1,0 +1,3 @@
+"0","img_predictors <- harvest_sample %>% dplyr::select(10:24) #1"
+"0","LA<- harvest_sample %>% dplyr::select('LA_mm2')"
+"0","img_LA <- harvest_sample %>% dplyr::select(7:9, 12:24) #3"

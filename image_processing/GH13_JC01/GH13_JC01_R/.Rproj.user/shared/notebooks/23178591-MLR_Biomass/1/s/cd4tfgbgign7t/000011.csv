@@ -1,0 +1,5 @@
+"0","library(BBmisc)"
+"0","stand_bbmisc <- normalize(img_predictors, method = 'range', range = c(0,1))"
+"0","# LFW as response variable and normalize image derived predictors. "
+"0","LFW_std<- stand_bbmisc %>%"
+"0","  mutate(LFW_g = img_LFW$LFW_g)"

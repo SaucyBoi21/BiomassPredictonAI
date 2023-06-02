@@ -1,0 +1,2 @@
+"0","# BIC  features"
+"0","new_dataset <- harvest_sample %>%dplyr::select(LA_mm2,LFW_g,LDW_g,height_mm, plant_height,new_feature)"

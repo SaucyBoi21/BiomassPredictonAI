@@ -1,0 +1,1 @@
+"0","LFW_rf <- randomForest(LFW_g~., data = train_set, ntree = 500)"

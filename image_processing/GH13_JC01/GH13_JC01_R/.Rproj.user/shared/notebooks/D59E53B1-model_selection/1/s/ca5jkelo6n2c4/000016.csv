@@ -1,0 +1,2 @@
+"0","LFW_importance <- importance(LFW_rf, type = 1)"
+"0","varImpPlot(LFW_rf, main = ""Variable Importance Plot"")"

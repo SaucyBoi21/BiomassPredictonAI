@@ -1,0 +1,16 @@
+"0","melted_matrix_feat %>% ggplot(aes(Var1,Var2, fill = value)) +"
+"0","    geom_tile() +"
+"0","  scale_fill_gradient2(midpoint = 0.5, mid =""grey70"", "
+"0","                       limits = c(-1, +1)) +"
+"0","  labs(title = ""Correlation Matrix \n for Image Derived Features \n"", "
+"0","       x = """", y = """", fill = ""Correlation \n Measure"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5, colour = ""black"", face = ""bold""), "
+"0","        axis.title.x = element_text(face=""bold"", colour=""darkgreen"", size = 12),"
+"0","        axis.title.y = element_text(face=""bold"", colour=""darkgreen"", size = 12),"
+"0","        legend.title = element_text(face=""bold"", colour=""brown"", size = 10),"
+"0","        axis.text.x = element_text(angle = 90)) +"
+"0","  geom_text(aes(x = Var1, y = Var2, label = round(value, 2)), color = ""black"", "
+"0","            fontface = ""bold"", size = 5)"
+"2","Error in ggplot(., aes(Var1, Var2, fill = value)) : 
+  object 'melted_matrix_feat' not found
+"

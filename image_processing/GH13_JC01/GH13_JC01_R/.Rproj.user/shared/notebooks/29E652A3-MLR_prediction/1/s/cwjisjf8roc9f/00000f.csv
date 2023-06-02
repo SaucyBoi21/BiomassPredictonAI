@@ -1,0 +1,3 @@
+"0","stand_bbmisc <- normalize(BIC_features, method = 'standardize')"
+"0","new_dataset<- stand_bbmisc %>%"
+"0","  mutate(LA_mm2 = LA$LA_mm2)"

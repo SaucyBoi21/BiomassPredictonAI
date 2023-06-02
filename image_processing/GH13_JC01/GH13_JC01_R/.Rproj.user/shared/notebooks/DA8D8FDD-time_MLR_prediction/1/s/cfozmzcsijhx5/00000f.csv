@@ -1,0 +1,1 @@
+"0","BIC_features <- img_predictors %>% dplyr::select(height_mm,plant_area,plant_ellipse_eccentricity,plant_ellipse_major_axis,plant_solidity,plant_perimeter,plant_ellipse_minor_axis)"

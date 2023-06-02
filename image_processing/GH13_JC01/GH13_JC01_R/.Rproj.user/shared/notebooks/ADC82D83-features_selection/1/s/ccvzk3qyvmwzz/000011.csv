@@ -1,0 +1,3 @@
+"0","# img predictors just includes "
+"0","matrix_features <- cor(img_predictors)"
+"0","corrplot(matrix_features, type = ""lower"",  addCoef.col = ""black"")"

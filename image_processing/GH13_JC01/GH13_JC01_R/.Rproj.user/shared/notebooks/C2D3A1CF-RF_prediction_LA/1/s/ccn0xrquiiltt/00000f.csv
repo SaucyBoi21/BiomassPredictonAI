@@ -1,0 +1,4 @@
+"0","# Use a random forest model to predict LFW, this time splitting the dataset. "
+"0","train_id<- sample(1:nrow(new_dataset),0.7*nrow(new_dataset))"
+"0","train_set<- new_dataset[train_id,]"
+"0","test_set<- new_dataset[-train_id,]"

@@ -1,0 +1,2 @@
+"0","MLR_transformed<-lm(LFW_g^(1/6)~.,data = harvest_sample)"
+"0","plot(MLR_transformed, which = 1)"

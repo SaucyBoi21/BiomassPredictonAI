@@ -1,0 +1,1 @@
+"0","LFW_h1 <- raw_data %>% filter(date == ""02/02/2023"") %>% dplyr::select(7,12:23) #3"

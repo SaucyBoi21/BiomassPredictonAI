@@ -1,0 +1,8 @@
+"0","set.seed(123)"
+"0","harvest_1 <-raw_data %>% filter(date == '02/02/2023') "
+"0",""
+"0","harvest_2 <- raw_data %>% filter(date == '09/02/2023') %>% sample_n(33)"
+"0",""
+"0","harvest_3 <-  raw_data %>% filter(date == '23/02/2023') %>% sample_n(33)"
+"0",""
+"0","harvest_sample <- bind_rows(harvest_1,harvest_2,harvest_3)"

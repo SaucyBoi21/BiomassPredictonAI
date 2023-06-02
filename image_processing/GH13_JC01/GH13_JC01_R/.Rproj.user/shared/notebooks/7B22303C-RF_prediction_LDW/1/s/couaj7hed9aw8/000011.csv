@@ -1,0 +1,5 @@
+"0","raw_data<- read.csv(""harvest_complete.csv"")"
+"0","raw_data$treatment <-as.factor(with(raw_data, ifelse(tray_id == '1', '280 ppm',"
+"0","                                                     ifelse(tray_id == 2, '160 ppm', '80 ppm'))))"
+"0","raw_data <- raw_data %>% relocate(treatment)"
+"0","raw_data$new_feature <- raw_data$plant_area * raw_data$height_mm"

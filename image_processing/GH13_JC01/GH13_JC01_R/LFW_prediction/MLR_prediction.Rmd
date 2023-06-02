@@ -1,0 +1,341 @@
+---
+title: "Leaf Fresh Weight Prediction using Multiple Linear Regression"
+author: "Jonathan Cárdenas"
+date: "2023-04-04"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(BBmisc)
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(caret)
+library(ggridges)
+library(reshape2)
+library(lubridate)
+library(RColorBrewer)
+library(corrplot)
+library(GGally)
+library(party)
+library(MASS)
+library(randomForest)
+```
+
+```{r}
+raw_data<- read.csv("harvest_complete.csv")
+raw_data$treatment <-as.factor(with(raw_data, ifelse(tray_id == '1', '280 ppm',
+                                                     ifelse(tray_id == 2, '160 ppm', '80 ppm'))))
+raw_data <- raw_data %>% relocate(treatment)
+#raw_data$new_feature <- raw_data$plant_area * raw_data$height_mm
+```
+
+
+Create 3 dataframes for predictors, response variable and combination of both
+```{r}
+# normalize img predictors
+img_predictors <- raw_data %>% dplyr::select(13:25) #1
+predictors_norm <- normalize(img_predictors, method = 'standardize')
+
+# extract LFW from raw data
+LFW_date<- raw_data %>% dplyr::select(c('LFW_g','date'))
+
+# combine normalized predictors and raw data. 
+img_LFW <- bind_cols(predictors_norm,LFW_date)
+```
+
+Select a random sample of 33 entries for the last two harvest:
+```{r}
+set.seed(12)
+harvest_1 <-img_LFW %>% filter(date == '02/02/2023') 
+
+harvest_2 <- img_LFW %>% filter(date == '09/02/2023') %>% sample_n(33)
+
+harvest_3 <-  img_LFW %>% filter(date == '23/02/2023') %>% sample_n(33)
+
+harvest_sample <- bind_rows(harvest_1,harvest_2,harvest_3) %>% dplyr::select(-date)
+```
+
+Select a representative number of features according to BIC analysis performed in the markdown for feature selection. Select the features using dplyr select. 
+
+# Start with a full model and then choose the model suggested by each criteria 
+```{r}
+MLR_full<-lm(LFW_g~.,data = harvest_sample)
+summary(MLR_full)
+```
+
+```{r}
+plot(MLR_full, which = 1)
+powerTransform(MLR_full)
+```
+```{r}
+library(car)
+boxCox(MLR_full)
+MLR_transformed<-lm(LFW_g^(1/6)~.,data = harvest_sample)
+plot(MLR_transformed, which = 1)
+summary(MLR_transformed)
+```
+
+# AIC Criteria (step()function)
+```{r}
+AIC_model<-step(MLR_transformed)
+summary(AIC_model)
+```
+# BIC Criteria (regsubset)
+```{r}
+library(leaps)
+subset_all <- regsubsets(LFW_g~.,data=harvest_sample, nvmax =14)
+summary(subset_all)$bic
+summary(subset_all)
+```
+Usually the model given by BIC criteria will have less predictors since it include a more rigorous penalty. If the goal of the regression would be explanation this would be the way to go. However, we care more about an accurate prediction. 
+
+```{r}
+BIC_model<-lm(LFW_g^(1/6)~height_mm+plant_area+plant_perimeter + plant_ellipse_eccentricity+plant_ellipse_major_axis, data = harvest_sample)
+summary(BIC_model)
+```
+
+
+# p-value: Fit a RF model using the best features based on p-value (significant predictors). Backwards
+```{r}
+# including only significant predictors
+pvalue_model<- lm(LFW_g~new_feature+plant_area+plant_ellipse_minor_axis,data = harvest_sample)
+
+summary(pvalue_model)
+```
+# Use Crossvalidation to compare between the different criteria models: 
+```{r}
+# 1. P value model   ms=49.59541
+library(DAAG)
+CVlm(harvest_sample,LFW_g~new_feature+plant_area+plant_ellipse_minor_axis)
+```
+```{r}
+# 2. BIC model: ms = 41.37608 
+CVlm(harvest_sample,LFW_g~plant_area+plant_solidity+plant_perimeter + plant_convex_hull_vertices+plant_ellipse_minor_axis+new_feature)
+```
+```{r}
+# 3. AIC model
+CVlm(harvest_sample,LFW_g~plant_area + plant_solidity + plant_perimeter + 
+    plant_convex_hull_vertices + plant_ellipse_major_axis + plant_ellipse_minor_axis + 
+    plant_ellipse_eccentricity + new_feature)
+```
+
+# AFTER SELECTING THE BEST MODEL: 
+Separate data in train and test data: 
+```{r}
+set.seed(50)
+# Use a random forest model to predict LFW, this time splitting the dataset. 
+train_id<- sample(1:nrow(harvest_sample),0.7*nrow(harvest_sample))
+train_set<- harvest_sample[train_id,]
+test_set<- harvest_sample[-train_id,]
+```
+Fit random forest model:
+The following chart shows the models summary. Is important to mention here that the models summary give us an out-of-bag MSE (for values used to train the model).
+
+```{r}
+MLR_model <- lm(LFW_g~plant_area+plant_solidity+plant_perimeter + plant_convex_hull_vertices+plant_ellipse_minor_axis+new_feature, data = train_set)
+summary(MLR_model)
+```
+
+From now on, we will use the test set to perform predictions and to calculate all the performance statistics. 
+```{r}
+MLR_prediction <- predict(MLR_model, newdata = test_set)
+```
+Notice that the R-squared value obtained below is not the same as the R-quared given by the model's summary. For this R-squared we are correlating the predicted values and the labels from the test set.
+
+MSE displayed is not the same as the summary MSE neither. The MSE we are calculating here is mean squared error of the model's prediction on the testing data. This metric measures how well the model generalizes to new, unseen data. 
+
+While the two MSE values are related, they are not the same. The out-of-bag MSE gives an estimate of the model's generalization performance based on the training data, while the MSE on the test set provides an actual measure of how well the model performs on new, unseen data. 
+
+```{r}
+# Evaluate the model performance: On new, unseen data. 
+MAE <- mean(abs(MLR_prediction - test_set$LFW_g))
+MSE <- mean((MLR_prediction - test_set$LFW_g)^2)
+R_squared <- cor(MLR_prediction,test_set$LFW_g)^2
+RMSE<- RMSE(MLR_prediction,test_set$LFW_g)
+
+# Print the performance metrics
+cat("Mean Absolute Error (MAE): ", MAE, "\n")
+cat("Mean Squared Error (MSE): ", MSE, "\n")
+cat("R-squared: ", R_squared, "\n")
+cat("RMSE (Prediction): ", RMSE, "\n")
+```
+
+
+```{r}
+ggplot(data.frame(actual = test_set$LFW_g, predicted = MLR_prediction), aes(x = actual, y = predicted)) + 
+  geom_point(color = "black", fill = "red",shape = 21, size = 2, stroke = 1) +
+  geom_abline(slope = 1, intercept = 0, color = "black", size =0.8) +
+  theme_light() +
+  theme(plot.title = element_text(size=20,hjust = 0.5, face="bold"),
+        axis.text = element_text(size = 10,color="black"),
+        axis.title.x = element_text(size=16,face="bold"),
+        axis.title = element_text(size = 16, face="bold"),
+        legend.position = "top",
+        legend.background = element_rect(fill="white",
+                                         size=1, linetype="solid", 
+                                         colour ="black"),
+        legend.text = element_text(size = 10),
+        legend.title = element_text(size = 10,
+                                    face = "bold"),
+        strip.background = element_rect(color="black", fill="green4", 
+                                        size=1.5, linetype="solid"),
+        strip.text.x = element_text(
+          size = 12, color = "white", face = "bold.italic"))+
+  labs(x = "Actual LFW (g)", 
+       y = "Predicted LFW (g)", 
+       title = "Multiple Linear Regression Model") +
+  annotate("text", x = 80, y = 130, label = paste("R-squared: ", round(R_squared, 3), "\n", "RMSE: ", round(RMSE, 3)), size = 5, color = "black")
+```
+
+## Using RF model based on best features selected by BIC criteria: 
+### Third Harvest Day: 
+Using the best variables chosen by BIC
+```{r}
+H3_best <- harvest_3 %>% dplyr::select(plant_area,plant_solidity,plant_perimeter, plant_convex_hull_vertices,plant_ellipse_minor_axis,new_feature, LFW_g)
+
+
+RF_prediction_H3 <- predict(MLR_model, newdata = H3_best)
+RF_prediction_H3
+```
+```{r}
+# Evaluate the model performance: On new, unseen data. 
+MAE <- mean(abs(RF_prediction_H3 - H3_best$LFW_g))
+MSE <- mean((RF_prediction_H3 - H3_best$LFW_g)^2)
+R_squared <- cor(RF_prediction_H3,H3_best$LFW_g)^2
+RMSE<- RMSE(RF_prediction_H3,H3_best$LFW_g)
+
+# Print the performance metrics
+cat("Mean Absolute Error (MAE): ", MAE, "\n")
+cat("Mean Squared Error (MSE): ", MSE, "\n")
+cat("R-squared: ", R_squared, "\n")
+cat("RMSE (Prediction): ", RMSE, "\n")
+```
+
+```{r}
+ggplot(data.frame(actual = H3_best$LFW_g, predicted = RF_prediction_H3), aes(x = actual, y = predicted)) + 
+   geom_point(color = "black", fill = "red",shape = 21, size = 2, stroke = 1) +
+  geom_abline(slope = 1, intercept = 0, color = "black", size =0.8) +
+  theme_light() +
+  theme(plot.title = element_text(size=20,hjust = 0.5, face="bold"),
+        axis.text = element_text(size = 10,color="black"),
+        axis.title.x = element_text(size=16,face="bold"),
+        axis.title = element_text(size = 16, face="bold"),
+        legend.position = "top",
+        legend.background = element_rect(fill="white",
+                                         size=1, linetype="solid", 
+                                         colour ="black"),
+        legend.text = element_text(size = 10),
+        legend.title = element_text(size = 10,
+                                    face = "bold"),
+        strip.background = element_rect(color="black", fill="green4", 
+                                        size=1.5, linetype="solid"),
+        strip.text.x = element_text(
+          size = 12, color = "white", face = "bold.italic"))+
+  labs(x = "Actual LFW (g)", 
+       y = "Predicted LFW (g)", 
+       title = "3rd Harvest Day: Multiple Linear Regression") +
+  annotate("text", x = 80, y = 130, label = paste("R-squared: ", round(R_squared, 3), "\n", "RMSE: ", round(RMSE, 3)), size = 5, color = "black")
+```
+
+Using the best variables chosen by BIC
+```{r}
+H2_best <- harvest_2 %>% dplyr::select(plant_area,plant_solidity,plant_perimeter, plant_convex_hull_vertices,plant_ellipse_minor_axis,new_feature, LFW_g)
+
+
+RF_prediction_H2 <- predict(MLR_model, newdata = H2_best)
+RF_prediction_H2
+```
+
+```{r}
+# Evaluate the model performance: On new, unseen data. 
+MAE <- mean(abs(RF_prediction_H2 - H2_best$LFW_g))
+MSE <- mean((RF_prediction_H2 - H2_best$LFW_g)^2)
+R_squared <- cor(RF_prediction_H2,H2_best$LFW_g)^2
+RMSE<- RMSE(RF_prediction_H2,H2_best$LFW_g)
+
+# Print the performance metrics
+cat("Mean Absolute Error (MAE): ", MAE, "\n")
+cat("Mean Squared Error (MSE): ", MSE, "\n")
+cat("R-squared: ", R_squared, "\n")
+cat("RMSE (Prediction): ", RMSE, "\n")
+```
+
+```{r}
+ggplot(data.frame(actual = H2_best$LFW_g, predicted = RF_prediction_H2), aes(x = actual, y = predicted)) + 
+    geom_point(color = "black", fill = "red",shape = 21, size = 2, stroke = 1) +
+  geom_abline(slope = 1, intercept = 0, color = "black", size =0.8) +
+  theme_light() +
+  theme(plot.title = element_text(size=20,hjust = 0.5, face="bold"),
+        axis.text = element_text(size = 10,color="black"),
+        axis.title.x = element_text(size=16,face="bold"),
+        axis.title = element_text(size = 16, face="bold"),
+        legend.position = "top",
+        legend.background = element_rect(fill="white",
+                                         size=1, linetype="solid", 
+                                         colour ="black"),
+        legend.text = element_text(size = 10),
+        legend.title = element_text(size = 10,
+                                    face = "bold"),
+        strip.background = element_rect(color="black", fill="green4", 
+                                        size=1.5, linetype="solid"),
+        strip.text.x = element_text(
+          size = 12, color = "white", face = "bold.italic"))+
+  labs(x = "Actual LFW (g)", 
+       y = "Predicted LFW (g)", 
+       title = "2nd Harvest Day: Multiple Linear Regression",
+       subtitle = "Model performance on unseen data (test  set) for second harvest day ") +
+  annotate("text", x = 5, y = 15, label = paste("R-squared: ", round(R_squared, 3), "\n", "RMSE: ", round(RMSE, 3)), size = 5, color = "black")
+```
+
+### First Harvest Day: 
+```{r}
+H1_best <- harvest_1 %>% dplyr::select(plant_area,plant_solidity,plant_perimeter, plant_convex_hull_vertices,plant_ellipse_minor_axis,new_feature, LFW_g)
+
+
+RF_prediction_H1 <- predict(MLR_model, newdata = H1_best)
+RF_prediction_H1
+```
+Model's performance description: 
+```{r}
+# Evaluate the model performance: On new, unseen data. 
+MAE <- mean(abs(RF_prediction_H1 - H1_best$LFW_g))
+MSE <- mean((RF_prediction_H1 - H1_best$LFW_g)^2)
+R_squared <- cor(RF_prediction_H1,H1_best$LFW_g)^2
+RMSE<- RMSE(RF_prediction_H1,H1_best$LFW_g)
+
+# Print the performance metrics
+cat("Mean Absolute Error (MAE): ", MAE, "\n")
+cat("Mean Squared Error (MSE): ", MSE, "\n")
+cat("R-squared: ", R_squared, "\n")
+cat("RMSE (Prediction): ", RMSE, "\n")
+```
+
+```{r}
+ggplot(data.frame(actual = H1_best$LFW_g, predicted = RF_prediction_H1), aes(x = actual, y = predicted)) + 
+  geom_point(color = "black", fill = "red",shape = 21, size = 2, stroke = 1) +
+  geom_abline(slope = 1, intercept = 0, color = "black", size =0.8) +
+  theme_light() +
+  theme(plot.title = element_text(size=17,hjust = 0.5, face="bold"),
+        axis.text = element_text(size = 10,color="black"),
+        axis.title.x = element_text(size=16,face="bold"),
+        axis.title = element_text(size = 16, face="bold"),
+        legend.position = "top",
+        legend.background = element_rect(fill="white",
+                                         size=1, linetype="solid", 
+                                         colour ="black"),
+        legend.text = element_text(size = 10),
+        legend.title = element_text(size = 10,
+                                    face = "bold"),
+        strip.background = element_rect(color="black", fill="green4", 
+                                        size=1.5, linetype="solid"),
+        strip.text.x = element_text(
+          size = 12, color = "white", face = "bold.italic"))+
+  labs(x = "Actual LFW (g)", 
+       y = "Predicted LFW (g)", 
+       title = "First Harvest Day: Multiple Linear Regression",
+       subtitle = "Model performance on unseen data (test  set) for second harvest day ") +
+  annotate("text", x = 2, y = 3.5, label = paste("R-squared: ", round(R_squared, 3), "\n", "RMSE: ", round(RMSE, 3)), size = 5, color = "black")
+
+```

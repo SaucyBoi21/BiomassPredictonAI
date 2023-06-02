@@ -1,0 +1,3 @@
+"0","model <- randomForest(LA_g~., data = train_set, ntree = 500, importance= TRUE)"
+"2","Error in eval(predvars, data, env) : object 'LA_g' not found
+"
