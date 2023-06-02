@@ -1,0 +1,28 @@
+{
+    "id": "C6C6729F",
+    "path": null,
+    "project_path": null,
+    "type": "object_explorer",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1675184003053.0,
+    "source_on_save": false,
+    "relative_order": 5,
+    "properties": {
+        "id": "09a5c1260f7645e6978a5dcc436ab79c",
+        "name": "model_sum",
+        "title": "model_sum",
+        "language": "R",
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 32088628386725934,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1675184003053,
+    "read_only": false,
+    "read_only_alternatives": []
+}
