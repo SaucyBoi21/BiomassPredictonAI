@@ -9,6 +9,8 @@ from os import chdir,remove,mkdir
 def nothing(x):
     pass
 
+
+
 #Options
 #mypath = r"T03_example/" #r"C:\Users\klimesp\Dropbox\Programovani\Python\Seed counter"
 #
@@ -18,7 +20,7 @@ def nothing(x):
 #files = [file for file in glob.glob("*.png")]
 #files = [file for file in glob.glob("*.jpg")]
 
-filenames = sorted(glob.glob('T01_rgb/*.jpg'))
+filenames = sorted(glob.glob('/Users/shilo/Documents/GitHub/BiomassPredictonAI/image_data/masks/T03_rgb/*.jpg'))
 
 
 l_l, l_a, l_b, u_l, u_a, u_b, size_ig = 0,0,0,255,255,255,0
@@ -101,7 +103,7 @@ for id, file in enumerate (filenames):
                 thearray = [[l_l, l_a, l_b], [u_l, u_a, u_b]]
                 print(thearray)
                 img_name = file.split('\\')[-1]
-                cv2.imwrite(f'T01_mask/{img_name}', mask)
+                cv2.imwrite(f'/Users/shilo/Documents/GitHub/BiomassPredictonAI/image_data/masks/T03_mask/{img_name}', mask)
 
                 # Also save this array as penval.npy
                 #np.save('hsv_value', thearray)
