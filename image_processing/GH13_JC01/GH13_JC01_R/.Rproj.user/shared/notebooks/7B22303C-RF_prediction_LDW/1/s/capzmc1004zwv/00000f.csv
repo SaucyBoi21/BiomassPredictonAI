@@ -1,1 +1,0 @@
-"0","RF_prediction <- predict(RF_model, newdata = test_set)"

@@ -1,1 +1,0 @@
-"0","harvest1_pred_std <- predict(linear_mod_train_std, newdata = LFW_harvest1_std)"

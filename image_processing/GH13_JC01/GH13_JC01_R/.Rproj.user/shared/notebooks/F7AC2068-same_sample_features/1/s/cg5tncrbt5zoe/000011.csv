@@ -1,4 +1,0 @@
-"0","print(summary(LFW_all)$adjr2)"
-"2","Error in h(simpleError(msg, call)) : 
-  error in evaluating the argument 'object' in selecting a method for function 'summary': object 'LFW_all' not found
-"

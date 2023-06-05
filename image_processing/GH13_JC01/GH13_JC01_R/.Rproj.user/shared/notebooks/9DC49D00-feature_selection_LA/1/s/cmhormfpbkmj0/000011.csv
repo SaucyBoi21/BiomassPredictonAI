@@ -1,1 +1,0 @@
-"0","BIC_features <- img_LA %>% dplyr::select(LFW_g,LDW_g,height_mm, plant_height)"

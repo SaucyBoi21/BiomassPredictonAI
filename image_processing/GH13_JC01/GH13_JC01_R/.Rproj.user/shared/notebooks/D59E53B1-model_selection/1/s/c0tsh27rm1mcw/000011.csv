@@ -1,1 +1,0 @@
-"0","model_pred <- predict(LFW_rf, newdata = test_set)"

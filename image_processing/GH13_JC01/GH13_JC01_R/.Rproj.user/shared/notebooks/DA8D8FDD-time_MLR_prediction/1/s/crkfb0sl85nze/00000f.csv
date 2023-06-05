@@ -1,3 +1,0 @@
-"0","img_predictors <- harvest_sample %>% dplyr::select(12:24,26) #1"
-"0","LFW<- harvest_sample %>% dplyr::select('LFW_g')"
-"0","img_LFW <- harvest_sample %>% dplyr::select(7,12:24,26) #3"

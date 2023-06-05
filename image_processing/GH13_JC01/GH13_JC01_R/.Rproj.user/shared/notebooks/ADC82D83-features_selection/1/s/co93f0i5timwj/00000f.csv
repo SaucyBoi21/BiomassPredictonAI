@@ -1,2 +1,0 @@
-"0","model <- randomForest(LFW_g~., data = train_set, ntree = 500, importance= TRUE)"
-"0","varImpPlot(model, sort = TRUE, n.var = 6, main = ""Variable Importance Plot"")"

@@ -1,2 +1,0 @@
-"0","# BIC  features erase plant solidity and perimeter"
-"0","new_dataset <- harvest_sample %>% dplyr::select(plant_area, plant_convex_hull_vertices,plant_ellipse_minor_axis,new_feature,LFW_g)"

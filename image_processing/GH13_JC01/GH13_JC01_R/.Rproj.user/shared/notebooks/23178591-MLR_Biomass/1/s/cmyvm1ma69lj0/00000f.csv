@@ -1,1 +1,0 @@
-"0","MLR_pred <- predict(linear_mod_train, newdata = test_set)"

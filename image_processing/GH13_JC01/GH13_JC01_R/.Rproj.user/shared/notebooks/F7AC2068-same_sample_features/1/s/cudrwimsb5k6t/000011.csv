@@ -1,5 +1,0 @@
-"0","img_predictors <- harvest_sample %>% dplyr::select(13:26) #1"
-"0","manual_predictors <- harvest_sample %>% dplyr::select(2,4,7:13) #2"
-"0","img_LFW <- harvest_sample %>% dplyr::select(8,13:26) #3"
-"0","img_LDW <- harvest_sample %>% dplyr::select(9,13:26) #4"
-"0","img_LA <- harvest_sample %>% dplyr::select(8,9,10,13:26) #5"
