@@ -102,7 +102,8 @@ for id, file in enumerate (filenames):
             if key == ord('s'):
                 thearray = [[l_l, l_a, l_b], [u_l, u_a, u_b]]
                 print(thearray)
-                img_name = file.split('\\')[-1]
+                img_name = file.split('/')[-1]
+                print(img_name)
                 cv2.imwrite(f'/Users/shilo/Documents/GitHub/BiomassPredictonAI/image_data/masks/T03_mask/{img_name}', mask)
 
                 # Also save this array as penval.npy
