@@ -4,3 +4,4 @@ results_seedling.csv
 /image_calibration
 /depth_images
 /virtualenv
+/checkpoints/sam_checkpoints/sam_vit_l_0b3195.pth
